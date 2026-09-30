@@ -185,6 +185,11 @@ pub fn after(tokenizer: &mut Tokenizer) -> State {
 /// Resolve heading (setext).
 pub fn resolve(tokenizer: &mut Tokenizer) -> Option<Subresult> {
     let mut enter = skip::to(&tokenizer.events, 0, &[Name::HeadingSetextUnderline]);
+    // The last paragraph an underline was moved into, as the index of its old
+    // `Paragraph:Enter` (removed) and of its new one (the underline’s enter).
+    // Edits are applied only at the end, so a later underline looking back
+    // for its paragraph still finds the old enter.
+    let mut moved: Option<(usize, usize)> = None;
 
     while enter < tokenizer.events.len() {
         let exit = skip::to(
@@ -202,11 +207,16 @@ pub fn resolve(tokenizer: &mut Tokenizer) -> Option<Subresult> {
 
         // There’s a paragraph before: this is a setext heading.
         if tokenizer.events[paragraph_exit_before].name == Name::Paragraph {
-            let paragraph_enter = skip::to_back(
+            let mut paragraph_enter = skip::to_back(
                 &tokenizer.events,
                 paragraph_exit_before - 1,
                 &[Name::Paragraph],
             );
+            if let Some((old, new)) = moved {
+                if paragraph_enter == old {
+                    paragraph_enter = new;
+                }
+            }
 
             // Change types of Enter:Paragraph, Exit:Paragraph.
             tokenizer.events[paragraph_enter].name = Name::HeadingSetextText;
@@ -243,6 +253,7 @@ pub fn resolve(tokenizer: &mut Tokenizer) -> Option<Subresult> {
                 tokenizer.map.add(enter + 1, exit - enter, vec![]);
                 // Remove old Paragraph:Enter.
                 tokenizer.map.add(exit + 3, 1, vec![]);
+                moved = Some((exit + 3, enter));
             } else {
                 // Swap type.
                 tokenizer.events[enter].name = Name::Paragraph;

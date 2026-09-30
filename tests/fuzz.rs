@@ -181,5 +181,25 @@ fn fuzz() -> Result<(), message::Message> {
         "16: unfinished CDATA opener, then an empty numeric character reference"
     );
 
+    assert_eq!(
+        to_html("=\n=\n=\na\n="),
+        "<h1>=</h1>\n<h1>=\na</h1>",
+        "17-a: setext underlines next to each other (GH-22, GH-31)"
+    );
+
+    assert_eq!(
+        to_html("}\n-\n--\n]\n="),
+        "<h2>}</h2>\n<h1>--\n]</h1>",
+        "17-b: setext underlines next to each other"
+    );
+
+    assert!(
+        matches!(
+            to_mdast("}\n-\n--\n]\n=", &Default::default()),
+            Ok(mdast::Node::Root(_))
+        ),
+        "17-c: setext underlines next to each other (mdast)"
+    );
+
     Ok(())
 }
