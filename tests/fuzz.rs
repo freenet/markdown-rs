@@ -129,5 +129,23 @@ fn fuzz() -> Result<(), message::Message> {
         "12: mdx: handle invalid mdx without panic (GH-26)"
     );
 
+    assert_eq!(
+        to_html("[a](b \"x \ny\")"),
+        "<p><a href=\"b\" title=\"x\ny\">a</a></p>",
+        "13-a: whitespace before a line ending in a title (GH-79)"
+    );
+
+    assert_eq!(
+        to_html("[a][b \nc]\n\n[b c]: d"),
+        "<p><a href=\"d\">a</a></p>\n",
+        "13-b: whitespace before a line ending in a reference label (GH-79)"
+    );
+
+    assert_eq!(
+        to_html("[x](/x \"> \n\")"),
+        "<p><a href=\"/x\" title=\"&gt;\n\">x</a></p>",
+        "13-c: whitespace before a line ending in a title, after `>`"
+    );
+
     Ok(())
 }
