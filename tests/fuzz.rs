@@ -153,5 +153,27 @@ fn fuzz() -> Result<(), message::Message> {
         "14: gfm: email address in an image title that spans lines"
     );
 
+    assert_eq!(
+        to_html("1. <!--\n-"),
+        "<ol>\n<li>\n&lt;!--\n</li>\n</ol>\n<ul>\n<li></li>\n</ul>",
+        "15-a: list item ending in unclosed html, then another marker"
+    );
+
+    assert!(
+        matches!(
+            to_mdast("1. <!--\n-", &Default::default()),
+            Ok(mdast::Node::Root(_))
+        ),
+        "15-b: list item ending in unclosed html, then another marker (mdast)"
+    );
+
+    assert!(
+        matches!(
+            to_mdast("*\t~~~\n1.", &Default::default()),
+            Ok(mdast::Node::Root(_))
+        ),
+        "15-c: list item ending in unclosed code, then another marker (GH-23)"
+    );
+
     Ok(())
 }
