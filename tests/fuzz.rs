@@ -175,5 +175,11 @@ fn fuzz() -> Result<(), message::Message> {
         "15-c: list item ending in unclosed code, then another marker (GH-23)"
     );
 
+    assert_eq!(
+        to_html("<![C&#;"),
+        "<p>&lt;![C&amp;#;</p>",
+        "16: unfinished CDATA opener, then an empty numeric character reference"
+    );
+
     Ok(())
 }
