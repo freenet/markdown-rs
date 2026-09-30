@@ -147,5 +147,11 @@ fn fuzz() -> Result<(), message::Message> {
         "13-c: whitespace before a line ending in a title, after `>`"
     );
 
+    assert_eq!(
+        to_html_with_options("![a](b \"c@d.com\ne\")", &Options::gfm())?,
+        "<p><img src=\"b\" alt=\"a\" title=\"c@d.com\ne\" /></p>",
+        "14: gfm: email address in an image title that spans lines"
+    );
+
     Ok(())
 }
