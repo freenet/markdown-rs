@@ -427,8 +427,11 @@ pub fn flow_end(tokenizer: &mut Tokenizer) -> State {
         }
     }
 
-    // Reset “piercing”.
-    child.pierce = false;
+    // Reset “piercing”, but not at the end: flushing the flow there can still
+    // retry constructs that start on this line, which must see it pierced.
+    if tokenizer.current.is_some() {
+        child.pierce = false;
+    }
 
     if child.lazy
         && tokenizer.tokenize_state.document_lazy_accepting_before

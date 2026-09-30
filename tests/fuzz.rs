@@ -201,5 +201,19 @@ fn fuzz() -> Result<(), message::Message> {
         "17-c: setext underlines next to each other (mdast)"
     );
 
+    assert!(
+        matches!(
+            to_mdast("a\n|-\n- <", &Options::gfm().parse),
+            Ok(mdast::Node::Root(_))
+        ),
+        "18-a: gfm: new container at the last line, after a table head"
+    );
+
+    assert_eq!(
+        to_html_with_options("a\n|-\n> <", &Options::gfm())?,
+        "<table>\n<thead>\n<tr>\n<th>a</th>\n</tr>\n</thead>\n</table>\n<blockquote>\n<p>&lt;</p>\n</blockquote>",
+        "18-b: gfm: new container at the last line, after a table head"
+    );
+
     Ok(())
 }
